@@ -1,11 +1,12 @@
 # 项目设置指南
 
-## 环境要求
-- macOS 13.0+
-- Xcode 15.0+
-- iOS 17.0+ 模拟器或设备
+## 环境要求（基于开发者环境）
+- **macOS**: 26.3.1+ (与开发者环境一致)
+- **Xcode**: 26.2+ (Version 17C52)
+- **iOS**: 17.0+ 模拟器或设备
+- **注意**: 项目使用纯 Swift 实现，无复杂依赖
 
-## 快速开始
+## 快速开始（针对本地环境优化）
 
 ### 1. 克隆仓库
 ```bash
@@ -14,15 +15,17 @@ cd openClaw-test
 git checkout dev
 ```
 
-### 2. 安装依赖
+### 2. 打开项目（简化版无依赖）
 ```bash
 cd CalculatorPro
-pod install
+open CalculatorPro.xcodeproj  # 使用 .xcodeproj（无 CocoaPods 依赖）
 ```
 
-### 3. 打开项目
+### 3. 配置（如果需要 CocoaPods）
 ```bash
-open CalculatorPro.xcworkspace  # 注意：是 .xcworkspace 不是 .xcodeproj
+# 如果需要安装依赖（当前项目已简化，不需要）
+# pod install
+# open CalculatorPro.xcworkspace  # 使用 .xcworkspace
 ```
 
 ### 4. 配置项目
