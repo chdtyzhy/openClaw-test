@@ -1,0 +1,35 @@
+# Fastlane Appfile - 应用配置
+
+# Apple ID (App Store Connect账号)
+apple_id "your-apple-id@email.com"
+
+# App Store Connect团队ID
+itc_team_id "YOUR_ITC_TEAM_ID"
+
+# 开发者团队ID
+team_id "YOUR_DEVELOPER_TEAM_ID"
+
+# 应用标识符
+app_identifier "com.yourcompany.calculatorpro"
+
+# 苹果开发者门户团队ID (可选)
+team_name "Your Team Name"
+
+# 包显示名称
+app_name "Calculator Pro"
+
+# 对于多目标应用，可以这样配置:
+# For more information about the Appfile, see:
+# https://docs.fastlane.tools/advanced/#appfile
+
+# 多环境配置示例:
+# if ENV["FASTLANE_ENV"] == "production"
+#   app_identifier "com.yourcompany.calculatorpro"
+#   apple_id "production@email.com"
+# elsif ENV["FASTLANE_ENV"] == "staging"
+#   app_identifier "com.yourcompany.calculatorpro.staging"
+#   apple_id "staging@email.com"
+# else
+#   app_identifier "com.yourcompany.calculatorpro.dev"
+#   apple_id "dev@email.com"
+# end

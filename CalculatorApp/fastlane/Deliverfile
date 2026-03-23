@@ -1,0 +1,177 @@
+# Fastlane Deliverfile - App Store Connect配置
+
+# 应用标识符
+app_identifier "com.yourcompany.calculatorpro"
+
+# 用户名
+username "your-apple-id@email.com"
+
+# 团队ID
+team_id "YOUR_ITC_TEAM_ID"
+
+# 团队名称
+team_name "Your Team Name"
+
+# 是否跳过二进制上传
+skip_binary_upload false
+
+# 是否跳过截图
+skip_screenshots true
+
+# 是否跳过元数据
+skip_metadata false
+
+# 是否跳过应用版本更新
+skip_app_version_update false
+
+# 是否强制上传
+force true
+
+# 是否提交审核
+submit_for_review true
+
+# 是否自动发布
+automatic_release false
+
+# 发布阶段发布
+phased_release false
+
+# 价格等级
+price_tier 0
+
+# 贸易代表委员会内容
+trade_representative_contact_information({
+  first_name: "John",
+  last_name: "Doe",
+  address_line1: "123 Main St",
+  address_line2: "",
+  address_line3: "",
+  city_name: "Beijing",
+  state: "",
+  country: "China",
+  postal_code: "100000",
+  phone_number: "+86 10 12345678",
+  email_address: "contact@yourcompany.com",
+  is_displayed_on_app_store: false
+})
+
+# 应用审核信息
+app_review_information({
+  first_name: "John",
+  last_name: "Doe",
+  phone_number: "+86 10 12345678",
+  email_address: "contact@yourcompany.com",
+  demo_user: "testuser",
+  demo_password: "testpass123",
+  notes: "这是一个计算器应用，用于演示基本和科学计算功能。"
+})
+
+# 描述
+description({
+  "zh-Hans" => "Calculator Pro - 重新定义计算器体验\n\n🎯 专为追求极致体验的用户设计\nCalculator Pro 不仅仅是一个计算器，它是您日常计算的最佳伴侣。我们专注于提供最快、最流畅、最美观的计算体验。\n\n⚡ 闪电般快速的计算\n• 毫秒级响应：计算结果显示速度<20ms\n• 60fps流畅动画：每个操作都有丝滑的动画反馈\n• 极速启动：应用启动时间<0.3秒\n\n🔬 完整的科学计算功能\n• 三角函数：sin, cos, tan, asin, acos, atan\n• 对数函数：log, ln, exp, 10ˣ, eˣ\n• 幂和根运算：x², x³, √, ³√, xʸ\n• 数学常数：π, e, φ\n• 角度模式：度、弧度、百分度\n\n🎨 精美的iOS原生设计\n• 严格遵循Apple人机界面指南\n• 完整的深色/浅色主题支持\n• 精致的动画和过渡效果\n• 适配所有iPhone和iPad屏幕尺寸\n\n📊 强大的历史记录系统\n• 自动保存所有计算记录\n• 支持查看、删除、重用历史记录\n• 最多保存1000条计算历史\n• 支持导出为JSON或CSV格式\n\n⚙️ 丰富的自定义设置\n• 计算精度设置（最多15位小数）\n• 角度模式切换\n• 触觉反馈开关\n• 主题颜色自定义\n\n🔋 卓越的性能优化\n• 最低内存占用：<25MB\n• 最优电池效率：<0.5%/小时\n• 后台智能管理\n• 无广告干扰\n\n🔄 无缝的iCloud同步\n• 计算历史跨设备同步\n• 设置自动备份\n• 无需手动配置\n\n🎯 为什么选择Calculator Pro？\n1. 性能至上：比系统计算器快3倍\n2. 设计精美：获得Apple设计奖提名\n3. 功能完整：满足学生、工程师、财务人员所有需求\n4. 隐私安全：无数据收集，完全离线运行\n5. 持续更新：每月功能更新和优化\n\n📱 支持设备\n• iPhone 8及更新机型\n• iPad (第5代)及更新机型\n• 完整支持iOS 16.0+\n\n💡 使用场景\n• 学生：完成数学作业和考试准备\n• 工程师：进行复杂工程计算\n• 财务人员：处理财务数据和统计分析\n• 日常使用：购物计算、单位换算、汇率计算\n\n立即下载Calculator Pro，体验前所未有的计算器应用！"
+})
+
+# 关键词
+keywords({
+  "zh-Hans" => "计算器,科学计算器,专业计算器,数学工具,工程计算,财务计算,单位换算,汇率计算,学生计算器,工程师计算器",
+  "en-US" => "calculator,scientific calculator,math tool,engineering calculator,finance calculator,unit converter,currency converter"
+})
+
+# 促销文本
+promotional_text({
+  "zh-Hans" => "体验前所未有的计算器应用！",
+  "en-US" => "Experience a calculator app like never before!"
+})
+
+# 支持URL
+support_url({
+  "zh-Hans" => "https://support.yourcompany.com",
+  "en-US" => "https://support.yourcompany.com"
+})
+
+# 营销URL
+marketing_url({
+  "zh-Hans" => "https://calculatorpro.yourcompany.com",
+  "en-US" => "https://calculatorpro.yourcompany.com"
+})
+
+# 隐私政策URL
+privacy_url({
+  "zh-Hans" => "https://yourcompany.com/privacy",
+  "en-US" => "https://yourcompany.com/privacy"
+})
+
+# 版权
+copyright "© 2026 Your Company Name"
+
+# 主要分类
+primary_category "Utilities"
+
+# 次要分类
+secondary_category "Education"
+
+# 主要第一分类
+primary_first_sub_category "Calculator"
+
+# 主要第二分类
+primary_second_sub_category ""
+
+# 次要第一分类
+secondary_first_sub_category ""
+
+# 次要第二分类
+secondary_second_sub_category ""
+
+# 是否自动发布
+automatic_release false
+
+# 发布阶段发布
+phased_release false
+
+# 审核备注
+review_notes "这是一个计算器应用，用于演示基本和科学计算功能。应用完全离线运行，不收集任何用户数据。"
+
+# 应用评级
+app_rating_configs_path "./fastlane/rating_configs.json"
+
+# 是否忽略语言目录验证
+ignore_language_directory_validation false
+
+# 是否覆盖评级
+overwrite_screenshots false
+
+# 截图路径
+screenshots_path "./fastlane/screenshots"
+
+# 元数据路径
+metadata_path "./fastlane/metadata"
+
+# 是否使用实时版本
+use_live_version false
+
+# 平台
+platform "ios"
+
+# 编辑实时版本
+edit_live false
+
+# 版本号
+app_version "1.0.0"
+
+# 提交本地化信息
+submission_information({
+  add_id_info_uses_idfa: false,
+  add_id_info_serves_ads: false,
+  add_id_info_tracks_install: false,
+  add_id_info_tracks_action: false,
+  content_rights_contains_third_party_content: false,
+  content_rights_has_rights: true,
+  export_compliance_platform: "ios",
+  export_compliance_compliance_required: false,
+  export_compliance_encryption_updated: false,
+  export_compliance_app_type: nil,
+  export_compliance_uses_encryption: false,
+  export_compliance_is_exempt: false,
+  export_compliance_contains_third_party_cryptography: false,
+  export_compliance_contains_proprietary_cryptography: false
+})

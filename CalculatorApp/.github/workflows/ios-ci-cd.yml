@@ -1,0 +1,292 @@
+name: iOS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # 允许手动触发
+
+env:
+  NODE_VERSION: '18'
+  RUBY_VERSION: '3.1'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+        
+    - name: Install npm dependencies
+      run: npm ci
+      
+    - name: Install CocoaPods dependencies
+      run: |
+        cd ios
+        pod install
+      
+    - name: Run JavaScript tests
+      run: npm test
+      
+    - name: Run iOS tests
+      run: |
+        cd ios
+        xcodebuild test \
+          -workspace CalculatorApp.xcworkspace \
+          -scheme CalculatorApp \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          -configuration Debug \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+          
+  build:
+    name: Build iOS App
+    runs-on: macos-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+        
+    - name: Install npm dependencies
+      run: npm ci
+      
+    - name: Install CocoaPods dependencies
+      run: |
+        cd ios
+        pod install
+        
+    - name: Install Fastlane
+      run: gem install fastlane
+        
+    - name: Build iOS app (Development)
+      if: github.ref == 'refs/heads/develop'
+      run: |
+        cd ios
+        xcodebuild build \
+          -workspace CalculatorApp.xcworkspace \
+          -scheme CalculatorApp \
+          -configuration Debug \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+          
+    - name: Build iOS app (Release)
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+      run: |
+        cd ios
+        xcodebuild build \
+          -workspace CalculatorApp.xcworkspace \
+          -scheme CalculatorApp \
+          -configuration Release \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+          
+    - name: Archive iOS app
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+      run: |
+        cd ios
+        xcodebuild archive \
+          -workspace CalculatorApp.xcworkspace \
+          -scheme CalculatorApp \
+          -configuration Release \
+          -archivePath CalculatorApp.xcarchive \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+          
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-build
+        path: |
+          ios/CalculatorApp.xcarchive
+          ios/build
+        retention-days: 7
+        
+  deploy-testflight:
+    name: Deploy to TestFlight
+    runs-on: macos-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+        
+    - name: Install Fastlane
+      run: gem install fastlane
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ios-build
+        
+    - name: Setup Xcode
+      run: sudo xcode-select -s /Applications/Xcode.app
+      
+    - name: Deploy to TestFlight
+      run: |
+        cd fastlane
+        fastlane beta
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+        APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+        APP_STORE_CONNECT_API_KEY_IN_HOUSE: ${{ secrets.APP_STORE_CONNECT_API_KEY_IN_HOUSE }}
+        
+    - name: Send deployment notification
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        username: 'GitHub Actions'
+        icon_emoji: ':rocket:'
+        text: 'Calculator Pro has been deployed to TestFlight!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        
+  deploy-appstore:
+    name: Deploy to App Store
+    runs-on: macos-latest
+    needs: deploy-testflight
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.RUBY_VERSION }}
+        
+    - name: Install Fastlane
+      run: gem install fastlane
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ios-build
+        
+    - name: Setup Xcode
+      run: sudo xcode-select -s /Applications/Xcode.app
+      
+    - name: Deploy to App Store
+      run: |
+        cd fastlane
+        fastlane release
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+        APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+        APP_STORE_CONNECT_API_KEY_IN_HOUSE: ${{ secrets.APP_STORE_CONNECT_API_KEY_IN_HOUSE }}
+        
+    - name: Send deployment notification
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        username: 'GitHub Actions'
+        icon_emoji: ':tada:'
+        text: 'Calculator Pro has been submitted to the App Store!'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Run security scan
+      run: |
+        echo "Running security checks..."
+        # 检查敏感信息
+        if grep -r "password\|secret\|key\|token" --include="*.js" --include="*.ts" --include="*.json" --include="*.md" . | grep -v node_modules | grep -v ".min.js"; then
+          echo "⚠️  Warning: Possible sensitive information found"
+        else
+          echo "✅ No sensitive information found"
+        fi
+        
+        # 检查依赖漏洞
+        if [ -f "package.json" ]; then
+          echo "Checking npm dependencies..."
+          npm audit --audit-level=moderate || true
+        fi
+        
+  notify:
+    name: Notify Status
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy-testflight, deploy-appstore, security-scan]
+    if: always()
+    
+    steps:
+    - name: Send workflow status
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#ci-cd'
+        username: 'GitHub Actions'
+        icon_emoji: ':github:'
+        text: 'CI/CD Pipeline completed for Calculator Pro'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

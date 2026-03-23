@@ -1,0 +1,115 @@
+# OpenClaw 配置
+.openclaw/
+.clawhub/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# React Native
+.expo/
+.expo-shared/
+.expo-web/
+dist/
+build/
+*.ipa
+*.apk
+*.aab
+
+# iOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+DerivedData/
+build/
+*.xcworkspace/contents.xcworkspacedata
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+
+# Android
+.gradle/
+local.properties
+*.keystore
+*.jks
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 技能目录 (太大，不上传)
+skills/
+
+# 内存文件 (可能包含敏感信息)
+memory/
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.temp
+
+# 个人配置
+USER.md
+IDENTITY.md
+SOUL.md
+AGENTS.md
+TOOLS.md
+HEARTBEAT.md
+BOOTSTRAP.md
+
+# 测试和日志文件
+skill_install_output.log
+skill_installation_log.md
+
+# 股票分析相关
+stock_*.py
+stock_*.txt
+stock_*.md
+
+# 微信相关
+wechat_*.py
+
+# 其他临时文件
+local_preview.html
+ios_app_market_research.md

@@ -1,0 +1,108 @@
+# Fastlane Gymfile - 构建配置
+
+# 方案名称
+scheme "CalculatorApp"
+
+# 工作空间路径
+workspace "./ios/CalculatorApp.xcworkspace"
+
+# 构建配置
+configuration "Release"
+
+# 输出目录
+output_directory "./build"
+
+# 输出名称
+output_name "CalculatorPro"
+
+# 清理构建
+clean true
+
+# 导出方法
+export_method "app-store"
+
+# 是否包含位码
+include_bitcode true
+
+# 是否包含符号
+include_symbols true
+
+# 是否上传到App Store Connect
+skip_package_ipa false
+
+# 构建路径
+build_path "./build"
+
+# 构建日志路径
+buildlog_path "./buildlogs"
+
+# 是否跳过存档
+skip_archive false
+
+# 是否跳过配置文件检查
+skip_codesigning false
+
+# 导出选项
+export_options(
+  method: "app-store",
+  provisioningProfiles: {
+    "com.yourcompany.calculatorpro" => "match AppStore com.yourcompany.calculatorpro"
+  }
+)
+
+# Xcode路径 (可选)
+# xcode_path "/Applications/Xcode.app"
+
+# 派生数据路径
+derived_data_path "./derivedData"
+
+# 结果包路径
+result_bundle true
+
+# 是否禁用xcpretty
+disable_xcpretty false
+
+# xcpretty参数
+xcpretty_args "--simple"
+
+# 构建定时器
+build_timing_summary true
+
+# 构建系统
+build_system "new" # 使用新的构建系统
+
+# 是否跳过配置文件下载
+skip_profile_detection false
+
+# 目标设备
+destination "generic/platform=iOS"
+
+# 是否禁用包依赖验证
+disable_package_automatic_updates false
+
+# 使用系统scm
+use_system_scm true
+
+# 额外参数
+xcodebuild_formatter "xcbeautify"
+
+# 后处理命令
+post_actions []
+
+# 失败时继续
+fail_build false
+
+# 详细输出
+verbose true
+
+# 环境变量
+env {
+  "FORCE_BUNDLE_IDENTIFIER" => "com.yourcompany.calculatorpro"
+}
+
+# 构建设置覆盖
+build_settings = {
+  "CODE_SIGN_STYLE" => "Manual",
+  "PROVISIONING_PROFILE_SPECIFIER" => "match AppStore com.yourcompany.calculatorpro",
+  "DEVELOPMENT_TEAM" => "YOUR_DEVELOPER_TEAM_ID"
+}

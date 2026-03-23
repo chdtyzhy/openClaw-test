@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Pro - iOS原生风格计算器预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .title {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+        }
+
+        /* iPhone模拟器样式 */
+        .iphone-frame {
+            width: 375px;
+            height: 667px;
+            background: #000;
+            border-radius: 46px;
+            padding: 18px;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .iphone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 34px;
+            background: #000;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 10;
+        }
+
+        .iphone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--system-background);
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 计算器应用样式 */
+        .calculator {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--system-background);
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--label);
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .time {
+            font-weight: 700;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* 主题切换区域 */
+        .theme-toggle-area {
+            padding: 16px 16px 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .theme-toggle {
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            background: var(--secondary-system-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 20px;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* 显示区域 */
+        .display-container {
+            flex: 1;
+            padding: 0 32px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        .previous-expression {
+            font-size: 20px;
+            color: var(--secondary-label);
+            margin-bottom: 8px;
+            min-height: 24px;
+            text-align: right;
+            width: 100%;
+        }
+
+        .display {
+            font-size: 60px;
+            font-weight: 600;
+            color: var(--label);
+            text-align: right;
+            line-height: 1;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: 'SF Pro Display', -apple-system, sans-serif;
+        }
+
+        /* 按钮网格 */
+        .buttons-container {
+            padding: 0 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calculator-button {
+            flex: 1;
+            height: 72px;
+            border-radius: 36px;
+            border: none;
+            font-size: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            min-width: 0;
+        }
+
+        .calculator-button:hover {
+            filter: brightness(0.95);
+        }
+
+        .calculator-button:active {
+            transform: scale(0.95);
+            filter: brightness(0.9);
+        }
+
+        /* 按钮类型样式 */
+        .number-button {
+            background: var(--system-gray-6);
+            color: var(--label);
+        }
+
+        .function-button {
+            background: var(--system-gray-5);
+            color: var(--label);
+        }
+
+        .operator-button {
+            background: var(--system-blue);
+            color: white;
+        }
+
+        .equals-button {
+            background: var(--system-orange);
+            color: white;
+        }
+
+        .clear-button {
+            background: var(--system-red);
+            color: white;
+        }
+
+        .zero-button {
+            flex: 2;
+            padding-left: 28px;
+            justify-content: flex-start;
+        }
+
+        /* 标签栏 */
+        .tab-bar {
+            height: 49px;
+            background: var(--secondary-system-background);
+            border-top: 1px solid var(--separator);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--secondary-label);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .tab-item.active {
+            color: var(--system-blue);
+        }
+
+        .tab-item:hover {
+            background: var(--system-fill);
+        }
+
+        .tab-icon {
+            font-size: 16px;
+        }
+
+        /* 控制面板 */
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 350px;
+            color: white;
+        }
+
+        .controls h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .theme-option {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-option.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: white;
+        }
+
+        .theme-option .theme-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .theme-option .theme-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .button-preview {
+            margin-bottom: 25px;
+        }
+
+        .button-preview h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .button-types {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .button-type-sample {
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .instructions ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #007AFF;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .download-btn:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        /* 颜色变量定义 */
+        :root {
+            /* 浅色模式 */
+            --system-background: #FFFFFF;
+            --secondary-system-background: #F2F2F7;
+            --label: #000000;
+            --secondary-label: rgba(60, 60, 67, 0.6);
+            --system-blue: #007AFF;
+            --system-orange: #FF9500;
+            --system-red: #FF3B30;
+            --system-gray-5: #E5E5EA;
+            --system-gray-6: #F2F2F7;
+            --separator: rgba(60, 60, 67, 0.1);
+            --system-fill: rgba(120, 120, 128, 0.2);
+        }
+
+        .dark-mode {
+            /* 深色模式 */
+            --system-background: #000000;
+            --secondary-system-background: #1C1C1E;
+            --label: #FFFFFF;
+            --secondary-label: rgba(235, 235, 245, 0.6);
+            --system-blue: #0A84FF;
+            --system-orange: #FF9F0A;
+            --system-red: #FF453A;
+            --system-gray-5: #3A3A3C;
+            --system-gray-6: #2C2C2E;
+            --separator: rgba(84, 84, 88, 0.65);
+            --system-fill: rgba(120, 120, 128, 0.36);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls {
+                width: 375px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <h1>Calculator Pro - iOS原生风格计算器</h1>
+            <p>React Native实现 | 遵循Apple HIG设计规范 | 实时UI预览</p>
+        </div>
+
+        <div class="preview-container">
+            <!-- iPhone模拟器 -->
+            <div class="iphone-frame">
+                <div class="iphone-screen" id="iphoneScreen">
+                    <div class="calculator">
+                        <!-- 状态栏 -->
+                        <div class="status-bar">
+                            <div class="time">13:49</div>
+                            <div class="status-icons">
+                                <span>📶</span>
+                                <span>📡</span>
+                                <span>🔋</span>
+                            </div>
+                        </div>
+
+                        <!-- 顶部控制栏 -->
+                        <div class="theme-toggle-area" style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px;">
+                            <button class="mode-toggle" id="modeToggle" style="padding: 8px 16px; background: var(--system-blue); color: white; border: none; border-radius: 20px; font-weight: 500; cursor: pointer;">
+                                <span id="modeText">科学模式 🔬</span>
+                            </button>
+                            <button class="theme-toggle" id="themeToggle">
+                                <span id="themeIcon">☀️</span>
+                            </button>
+                        </div>
+
+                        <!-- 显示区域 -->
+                        <div class="display-container">
+                            <div class="previous-expression" id="previousExpression">
+                                12 + 34
+                            </div>
+                            <div class="display" id="display">
+                                0
+                            </div>
+                            <div id="modeIndicator" style="font-size: 14px; color: var(--secondary-label); text-align: right; margin-top: 8px;">
+                                基础计算模式
+                            </div>
+                        </div>
+
+                        <!-- 科学计算按钮行 -->
+                        <div id="scientificRow" style="display: none; padding: 0 16px 16px; flex-wrap: wrap; justify-content: space-between;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+                                <button class="scientific-button" data-scientific="sin" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">sin</button>
+                                <button class="scientific-button" data-scientific="cos" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">cos</button>
+                                <button class="scientific-button" data-scientific="tan" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">tan</button>
+                                <button class="scientific-button" data-scientific="log" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">log</button>
+                                <button class="scientific-button" data-scientific="ln" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">ln</button>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <button class="scientific-button" data-scientific="sqrt" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">√</button>
+                                <button class="scientific-button" data-scientific="square" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">x²</button>
+                                <button class="scientific-button" data-scientific="pi" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">π</button>
+                                <button class="scientific-button" data-scientific="e" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">e</button>
+                                <button class="scientific-button" data-scientific="power" style="flex: 1; margin: 0 4px; padding: 12px 0; background: var(--system-gray-5); border: none; border-radius: 8px; color: var(--label); font-weight: 500; cursor: pointer;">xʸ</button>
+                            </div>
+                        </div>
+
+                        <!-- 按钮网格 -->
+                        <div class="buttons-container">
+                            <!-- 第一行 -->
+                            <div class="button-row">
+                                <button class="calculator-button clear-button" data-action="clear">AC</button>
+                                <button class="calculator-button function-button" data-action="plus-minus">+/-</button>
+                                <button class="calculator-button function-button" data-action="percent">%</button>
+                                <button class="calculator-button operator-button" data-action="divide">÷</button>
+                            </div>
+                            <!-- 第二行 -->
+                            <div class="button-row">
+                                <button class="calculator-button number-button" data-number="7">7</button>
+                                <button class="calculator-button number-button" data-number="8">8</button>
+                                <button class="calculator-button number-button" data-number="9">9</button>
+                                <button class="calculator-button operator-button" data-action="multiply">×</button>
+                            </div>
+                            <!-- 第三行 -->
+                            <div class="button-row">
+                                <button class="calculator-button number-button" data-number="4">4</button>
+                                <button class="calculator-button number-button" data-number="5">5</button>
+                                <button class="calculator-button number-button" data-number="6">6</button>
+                                <button class="calculator-button operator-button" data-action="subtract">-</button>
+                            </div>
+                            <!-- 第四行 -->
+                            <div class="button-row">
+                                <button class="calculator-button number-button" data-number="1">1</button>
+                                <button class="calculator-button number-button" data-number="2">2</button>
+                                <button class="calculator-button number-button" data-number="3">3</button>
+                                <button class="calculator-button operator-button" data-action="add">+</button>
+                            </div>
+                            <!-- 第五行 -->
+                            <div class="button-row">
+                                <button class="calculator-button number-button zero-button" data-number="0">0</button>
+                                <button class="calculator-button number-button" data-action="decimal">.</button>
+                                <button class="calculator-button equals-button" data-action="equals">=</button>
+                            </div>
+                        </div>
+
+                        <!-- 标签栏 -->
+                        <div class="tab-bar">
+                            <div class="tab-item active">
+                                <span class="tab-icon">🧮</span>
+                                <span>计算器</span>
+                            </div>
+                            <div class="tab-item">
+                                <span class="tab-icon">📊</span>
+                                <span>历史</span>
+                            </div>
+                            <div class="tab-item">
+                                <span class="tab-icon">⚙️</span>
+                                <span>设置</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="controls">
+                <h2>UI控制面板</h2>
+                
+                <div class="theme-selector">
+                    <div class="theme-option active" data-theme="light">
+                        <div class="theme-icon">☀️</div>
+                        <div class="theme-name">浅色模式</div>
+                    </div>
+                    <div class="theme-option" data-theme="dark">
+                        <div class="theme-icon">🌙</div>
+                        <div class="theme-name">深色模式</div>
+                    </div>
+                </div>
+
+                <div class="button-preview">
+                    <h3>按钮类型预览</h3>
+                    <div class="button-types">
+                        <div class="button-type-sample number-button">数字</div>
+                        <div class="button-type-sample function-button">功能</div>
+                        <div class="button-type-sample operator-button">操作符</div>
+                        <div class="button-type-sample equals-button">等号</div>
+                        <div class="button-type-sample clear-button">清除</div>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <h3>使用说明</h3>
+                    <ul>
+                        <li>点击数字按钮输入数字</li>
+                        <li>点击操作符按钮进行运算</li>
+                        <li>点击等号按钮计算结果</li>
+                        <li>点击AC按钮清除所有</li>
+                        <li>点击+/-按钮切换正负</li>
+                        <li>点击%按钮计算百分比</li>
+                        <li>点击右上角按钮切换主题</li>
+                    </ul>
+                    <p>此预览展示实际React Native应用的UI设计，完全遵循iOS原生设计规范。</p>
+                </div>
+
+                <a href="#" class="download-btn" id="downloadBtn">
+                    📥 下载React Native项目源码
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 计算器状态
+        let currentValue = '0';
+        let previousValue = null;
+        let currentOperator = null;
+        let waitingForNewValue = false;
+        let isDarkMode = false;
+
+        // DOM元素
+        const displayElement = document.getElementById('display');
+        const previousExpressionElement = document.getElementById('previousExpression');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const iphoneScreen = document.getElementById('iphoneScreen');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const numberButtons = document.querySelectorAll('[data-number]');
+        const actionButtons = document.querySelectorAll('[data-action]');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // 初始化
+        function initCalculator() {
+            updateDisplay();
+            setupEventListeners();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 数字按钮
+            numberButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const number = button.getAttribute('data-number');
+                    inputNumber(number);
+                });
+            });
+
+            // 操作按钮
+            actionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const action = button.getAttribute('data-action');
+                    handleAction(action);
+                });
+            });
+
+            // 主题切换
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // 主题选项
+            themeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const theme = option.getAttribute('data-theme');
+                    setTheme(theme);
+                    
+                    // 更新活动状态
+                    themeOptions.forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                });
+            });
+
+            // 科学计算模式切换
+            const modeToggle = document.getElementById('modeToggle');
+            const modeText = document.getElementById('modeText');
+            const modeIndicator = document.getElementById('modeIndicator');
+            const scientificRow = document.getElementById('scientificRow');
+            
+            let isScientificMode = false;
+            
+            modeToggle.addEventListener('click', () => {
+                isScientificMode = !isScientificMode;
+                if (isScientificMode) {
+                    modeText.textContent = '基础模式 🔢';
+                    modeIndicator.textContent = '科学计算模式';
+                    scientificRow.style.display = 'flex';
+                } else {
+                    modeText.textContent = '科学模式 🔬';
+                    modeIndicator.textContent = '基础计算模式';
+                    scientificRow.style.display = 'none';
+                }
+            });
+
+            // 科学计算按钮
+            const scientificButtons = document.querySelectorAll('.scientific-button');
+            scientificButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const func = button.getAttribute('data-scientific');
+                    handleScientificFunction(func);
+                });
+            });
+
+            // 下载按钮
+            downloadBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('项目源码位于: /root/.openclaw/workspace/CalculatorApp/\n包含完整的React Native + TypeScript实现。');
+            });
+        }
+
+        // 输入数字
+        function inputNumber(num) {
+            if (waitingForNewValue) {
+                currentValue = num;
+                waitingForNewValue = false;
+            } else {
+                currentValue = currentValue === '0' ? num : currentValue + num;
+            }
+            updateDisplay();
+        }
+
+        // 处理操作
+        function handleAction(action) {
+            switch (action) {
+                case 'clear':
+                    clearCalculator();
+                    break;
+                case 'plus-minus':
+                    toggleSign();
+                    break;
+                case 'percent':
+                    calculatePercent();
+                    break;
+                case 'decimal':
+                    addDecimal();
+                    break;
+                case 'add':
+                case 'subtract':
+                case 'multiply':
+                case 'divide':
+                    setOperator(action);
+                    break;
+                case 'equals':
+                    calculateResult();
+                    break;
+            }
+            updateDisplay();
+        }
+
+        // 清除计算器
+        function clearCalculator() {
+            currentValue = '0';
+            previousValue = null;
+            currentOperator = null;
+            waitingForNewValue = false;
+        }
+
+        // 切换正负
+        function toggleSign() {
+            currentValue = String(-parseFloat(currentValue));
+        }
+
+        // 计算百分比
+        function calculatePercent() {
+            currentValue = String(parseFloat(currentValue) / 100);
+        }
+
+        // 添加小数点
+        function addDecimal() {
+            if (!currentValue.includes('.')) {
+                currentValue += '.';
+            }
+        }
+
+        // 处理科学计算函数
+        function handleScientificFunction(func) {
+            const value = parseFloat(currentValue);
+            let result;
+            let expression = '';
+            
+            try {
+                switch (func) {
+                    case 'sin':
+                        result = Math.sin(value * Math.PI / 180); // 角度制
+                        expression = `sin(${value}°)`;
+                        break;
+                    case 'cos':
+                        result = Math.cos(value * Math.PI / 180);
+                        expression = `cos(${value}°)`;
+                        break;
+                    case 'tan':
+                        result = Math.tan(value * Math.PI / 180);
+                        expression = `tan(${value}°)`;
+                        break;
+                    case 'log':
+                        result = Math.log10(value);
+                        expression = `log(${value})`;
+                        break;
+                    case 'ln':
+                        result = Math.log(value);
+                        expression = `ln(${value})`;
+                        break;
+                    case 'sqrt':
+                        result = Math.sqrt(value);
+                        expression = `√(${value})`;
+                        break;
+                    case 'square':
+                        result = Math.pow(value, 2);
+                        expression = `(${value})²`;
+                        break;
+                    case 'pi':
+                        result = Math.PI;
+                        expression = 'π';
+                        break;
+                    case 'e':
+                        result = Math.E;
+                        expression = 'e';
+                        break;
+                    case 'power':
+                        // 简单实现：平方
+                        result = Math.pow(value, 2);
+                        expression = `(${value})²`;
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (isNaN(result) || !isFinite(result)) {
+                    alert('计算错误: 无法计算该表达式');
+                    return;
+                }
+                
+                currentValue = String(result);
+                previousExpressionElement.textContent = expression + ' =';
+                updateDisplay();
+            } catch (error) {
+                alert('计算错误: 执行计算时发生错误');
+            }
+        }
+
+        // 设置操作符
+        function setOperator(operator) {
+            if (currentOperator !== null && !waitingForNewValue) {
+                calculateResult();
+            }
+            
+            previousValue = currentValue;
+            currentOperator = operator;
+            waitingForNewValue = true;
+        }
+
+        // 计算结果
+        function calculateResult() {
+            if (previousValue === null || currentOperator === null) {
+                return;
+            }
+
+            const prev = parseFloat(previousValue);
+            const current = parseFloat(currentValue);
+            let result;
+
+            switch (currentOperator) {
+                case 'add':
+                    result = prev + current;
+                    break;
+                case 'subtract':
+                    result = prev - current;
+                    break;
+                case 'multiply':
+                    result = prev * current;
+                    break;
+                case 'divide':
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+
+            currentValue = String(result);
+            previousValue = null;
+            currentOperator = null;
+            waitingForNewValue = true;
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            displayElement.textContent = formatNumber(currentValue);
+            
+            // 更新之前的表达式显示
+            if (previousValue !== null && currentOperator !== null) {
+                const operatorSymbol = getOperatorSymbol(currentOperator);
+                previousExpressionElement.textContent = `${formatNumber(previousValue)} ${operatorSymbol}`;
+            } else {
+                previousExpressionElement.textContent = '';
+            }
+        }
+
+        // 格式化数字显示
+        function formatNumber(num) {
+            const number = parseFloat(num);
+            if (isNaN(number)) return '0';
+            
+            // 如果数字太大，使用科学计数法
+            if (Math.abs(number) > 999999999) {
+                return number.toExponential(6);
+            }
+            
+            // 移除不必要的尾随零
+            return Number(number.toFixed(8)).toString();
+        }
+
+        // 获取操作符符号
+        function getOperatorSymbol(operator) {
+            const symbols = {
+                'add': '+',
+                'subtract': '-',
+                'multiply': '×',
+                'divide': '÷'
+            };
+            return symbols[operator] || operator;
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            applyTheme();
+        }
+
+        // 设置主题
+        function setTheme(theme) {
+            isDarkMode = (theme === 'dark');
+            applyTheme();
+        }
+
+        // 应用主题
+        function applyTheme() {
+            if (isDarkMode) {
+                iphoneScreen.classList.add('dark-mode');
+                themeIcon.textContent = '🌙';
+                
+                // 更新主题选项活动状态
+                themeOptions.forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-theme') === 'dark') {
+                        option.classList.add('active');
+                    }
+                });
+            } else {
+                iphoneScreen.classList.remove('dark-mode');
+                themeIcon.textContent = '☀️';
+                
+                // 更新主题选项活动状态
+                themeOptions.forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-theme') === 'light') {
+                        option.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // 键盘支持
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+            
+            if (key >= '0' && key <= '9') {
+                inputNumber(key);
+            } else if (key === '.') {
+                addDecimal();
+            } else if (key === '+') {
+                setOperator('add');
+            } else if (key === '-') {
+                setOperator('subtract');
+            } else if (key === '*') {
+                setOperator('multiply');
+            } else if (key === '/') {
+                event.preventDefault();
+                setOperator('divide');
+            } else if (key === 'Enter' || key === '=') {
+                calculateResult();
+            } else if (key === 'Escape' || key === 'Delete') {
+                clearCalculator();
+            } else if (key === '%') {
+                calculatePercent();
+            }
+            
+            updateDisplay();
+        });
+
+        // 初始化计算器
+        initCalculator();
+
+        // 演示动画
+        setTimeout(() => {
+            // 自动演示一些计算
+            const demoSteps = [
+                () => inputNumber('1'),
+                () => inputNumber('2'),
+                () => setOperator('add'),
+                () => inputNumber('3'),
+                () => calculateResult(),
+                // 切换到科学计算模式
+                () => {
+                    isScientificMode = true;
+                    modeText.textContent = '基础模式 🔢';
+                    modeIndicator.textContent = '科学计算模式';
+                    scientificRow.style.display = 'flex';
+                },
+                // 科学计算演示
+                () => inputNumber('4'),
+                () => inputNumber('5'),
+                () => handleScientificFunction('sin'),
+                () => inputNumber('9'),
+                () => handleScientificFunction('sqrt'),
+                () => handleScientificFunction('pi'),
+                // 切换回基础模式
+                () => {
+                    isScientificMode = false;
+                    modeText.textContent = '科学模式 🔬';
+                    modeIndicator.textContent = '基础计算模式';
+                    scientificRow.style.display = 'none';
+                },
+            ];
+
+            let step = 0;
+            const runDemoStep = () => {
+                if (step < demoSteps.length) {
+                    demoSteps[step]();
+                    updateDisplay();
+                    step++;
+                    setTimeout(runDemoStep, 1000);
+                }
+            };
+
+            // 开始演示
+            setTimeout(runDemoStep, 1500);
+        }, 500);
+    </script>
+</body>
+</html>
