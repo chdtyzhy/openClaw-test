@@ -17,7 +17,7 @@ enum SimpleCalculatorOperation: String, CaseIterable, Equatable {
 
 // MARK: - 简化计算器
 class SimpleCalculator: ObservableObject {
-    // 使用 @Published - 在 Xcode 26.2 中应该工作
+    // 使用 @Published
     @Published var display: String = "0"
     @Published var operation: SimpleCalculatorOperation?
     

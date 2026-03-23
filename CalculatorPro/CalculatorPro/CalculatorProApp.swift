@@ -34,11 +34,11 @@ struct CalculatorProApp: App {
 }
 
 // MARK: - 应用状态管理
-@objc class AppState: NSObject, ObservableObject {
-    @objc dynamic var isActive = true
-    @objc dynamic var launchCount = 0
-    @objc dynamic var lastLaunchDate = Date()
-    @objc dynamic var theme: AppTheme = .system
+class AppState: ObservableObject {
+    @Published var isActive = true
+    @Published var launchCount = 0
+    @Published var lastLaunchDate = Date()
+    @Published var theme: AppTheme = .system
     
     init() {
         loadAppData()
