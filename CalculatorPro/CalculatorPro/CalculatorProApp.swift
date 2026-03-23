@@ -4,15 +4,18 @@
 //
 
 import SwiftUI
+import Combine
 
 @main
 struct CalculatorProApp: App {
-    @StateObject private var appState = AppState()
+    // 暂时注释掉复杂的 AppState
+    // @StateObject private var appState = AppState()
     
     var body: some Scene {
         WindowGroup {
-            CalculatorView()
-                .environmentObject(appState)
+            // 先使用简化版视图测试
+            SimpleCalculatorView()
+                // .environmentObject(appState)
                 .onAppear {
                     configureAppearance()
                 }
@@ -20,35 +23,22 @@ struct CalculatorProApp: App {
     }
     
     private func configureAppearance() {
-        // 配置导航栏外观
+        // 简化外观配置
+        #if os(iOS)
+        // 只在 iOS 上配置基本外观
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor.systemBackground
-        appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.label,
-            .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
-        ]
-        
+        appearance.configureWithDefaultBackground()
         UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
-        
-        // 配置标签栏外观
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = UIColor.systemBackground
-        
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        #endif
     }
 }
 
 // MARK: - 应用状态管理
-class AppState: ObservableObject {
-    @Published var isActive = true
-    @Published var launchCount = 0
-    @Published var lastLaunchDate = Date()
-    @Published var theme: AppTheme = .system
+@objc class AppState: NSObject, ObservableObject {
+    @objc dynamic var isActive = true
+    @objc dynamic var launchCount = 0
+    @objc dynamic var lastLaunchDate = Date()
+    @objc dynamic var theme: AppTheme = .system
     
     init() {
         loadAppData()
@@ -83,7 +73,7 @@ class AppState: ObservableObject {
 }
 
 // MARK: - 主题管理
-enum AppTheme: String, CaseIterable {
+enum AppTheme: String, CaseIterable, Equatable {
     case light = "浅色"
     case dark = "深色"
     case system = "跟随系统"
