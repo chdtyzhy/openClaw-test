@@ -1,0 +1,26 @@
+#!/bin/bash
+# 预提交钩子 - 在提交前运行检查
+
+echo "🔍 运行预提交检查..."
+
+# 检查是否有未暂存的文件
+if ! git diff --quiet --exit-code; then
+    echo "⚠️  警告：有未暂存的更改"
+    echo "   运行 'git add .' 或 'git stash' 处理未暂存文件"
+fi
+
+# 检查 Swift 文件格式（如果有 SwiftFormat）
+if command -v swiftformat &> /dev/null; then
+    echo "📝 检查 Swift 代码格式..."
+    swiftformat --lint .
+fi
+
+# 检查 Podfile.lock 是否与 Podfile 同步
+if [ -f "CalculatorPro/Podfile" ] && [ -f "CalculatorPro/Podfile.lock" ]; then
+    echo "📦 检查 CocoaPods 依赖..."
+    cd CalculatorPro && pod outdated --silent
+    cd ..
+fi
+
+echo "✅ 预提交检查完成"
+exit 0
