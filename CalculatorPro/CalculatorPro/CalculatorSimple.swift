@@ -15,11 +15,30 @@ enum SimpleCalculatorOperation: String, CaseIterable, Equatable {
     case equals = "="
 }
 
+// MARK: - 历史记录项
+struct HistoryItem: Identifiable, Equatable {
+    let id = UUID()
+    let expression: String
+    let result: String
+    let timestamp: Date
+    
+    init(expression: String, result: String) {
+        self.expression = expression
+        self.result = result
+        self.timestamp = Date()
+    }
+    
+    var displayText: String {
+        return "\(expression) = \(result)"
+    }
+}
+
 // MARK: - 简化计算器
 class SimpleCalculator: ObservableObject {
     // 使用 @Published
     @Published var display: String = "0"
     @Published var operation: SimpleCalculatorOperation?
+    @Published var history: [HistoryItem] = []
     
     private var firstNumber: Double = 0
     private var secondNumber: Double = 0
@@ -97,6 +116,16 @@ class SimpleCalculator: ObservableObject {
             formatter.minimumFractionDigits = 0
             formatter.groupingSeparator = ""
             display = formatter.string(from: NSNumber(value: result)) ?? "\(result)"
+            
+            // 记录到历史
+            let expression = "\(formatNumber(firstNumber)) \(op.displaySymbol) \(formatNumber(secondNumber))"
+            let historyItem = HistoryItem(expression: expression, result: display)
+            history.insert(historyItem, at: 0)
+            
+            // 限制历史记录数量
+            if history.count > 50 {
+                history.removeLast()
+            }
         }
         
         firstNumber = result
@@ -106,5 +135,25 @@ class SimpleCalculator: ObservableObject {
     
     func equals() {
         calculate()
+    }
+    
+    // MARK: - 历史记录管理
+    func clearHistory() {
+        history.removeAll()
+    }
+    
+    func useHistoryItem(_ item: HistoryItem) {
+        display = item.result
+        isSecondNumber = true
+    }
+    
+    // MARK: - 工具函数
+    private func formatNumber(_ number: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 6
+        formatter.minimumFractionDigits = 0
+        formatter.groupingSeparator = ""
+        return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
     }
 }

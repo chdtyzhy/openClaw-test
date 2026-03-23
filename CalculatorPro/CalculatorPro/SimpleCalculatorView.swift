@@ -8,6 +8,7 @@ import Combine
 
 struct SimpleCalculatorView: View {
     @StateObject private var calculator = SimpleCalculator()
+    @State private var showingHistory = false
     
     let buttons = [
         ["7", "8", "9", "÷"],
@@ -19,6 +20,38 @@ struct SimpleCalculatorView: View {
     
     var body: some View {
         VStack(spacing: 20) {
+            // 顶部工具栏
+            HStack {
+                // 历史记录按钮
+                Button {
+                    showingHistory = true
+                } label: {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(Color.blue.opacity(0.1))
+                        )
+                }
+                .disabled(calculator.history.isEmpty)
+                .opacity(calculator.history.isEmpty ? 0.5 : 1)
+                
+                Spacer()
+                
+                // 历史记录计数
+                if !calculator.history.isEmpty {
+                    Text("\(calculator.history.count)")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Circle().fill(Color.blue))
+                }
+            }
+            .padding(.horizontal)
+            
             // 显示区域
             Text(calculator.display)
                 .font(.system(size: 48, weight: .light))
@@ -45,7 +78,10 @@ struct SimpleCalculatorView: View {
             
             Spacer()
         }
-        .padding(.top, 40)
+        .padding(.top, 20)
+        .sheet(isPresented: $showingHistory) {
+            HistoryView(calculator: calculator)
+        }
     }
     
     private func handleButtonTap(_ button: String) {
