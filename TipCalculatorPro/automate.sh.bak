@@ -73,6 +73,7 @@ install_deps() {
     # 配置淘宝镜像（中国用户）
     print_step "配置淘宝镜像..."
     npm config set registry https://registry.npmmirror.com
+    npm config set disturl https://npmmirror.com/dist
     
     # 安装依赖
     npm install --verbose
